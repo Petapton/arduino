@@ -3,7 +3,7 @@ import asyncio
 """Support for Arduino boards running with the Firmata firmware."""
 import logging
 
-from pymata_express.pymata_express import PymataExpress
+from pymata4.pymata4 import Pymata4
 import serial
 import voluptuous as vol
 
@@ -35,22 +35,21 @@ def setup(hass, config):
     port = config[DOMAIN][CONF_PORT]
     baud_rate = config[DOMAIN][CONF_BAUD]
 
-    asyncio.set_event_loop(asyncio.new_event_loop())
     try:
-        board = PymataExpress(port, baud_rate)
+        board = Pymata4(port, baud_rate)
     except (serial.serialutil.SerialException, FileNotFoundError):
         _LOGGER.error("Your port %s is not accessible", port)
         return False
 
-    async def stop_arduino(event):
+    def stop_arduino(event):
         """Stop the Arduino service."""
-        await board.shutdown()
+        board.shutdown()
 
-    async def start_arduino(event):
+    def start_arduino(event):
         """Start the Arduino service."""
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop_arduino)
+        hass.bus.listen_once(EVENT_HOMEASSISTANT_STOP, stop_arduino)
 
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, start_arduino)
+    hass.bus.listen_once(EVENT_HOMEASSISTANT_START, start_arduino)
     hass.data[DOMAIN] = board
 
     return True

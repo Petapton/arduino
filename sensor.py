@@ -50,15 +50,18 @@ class ArduinoSensor(Entity):
         self._name = name
         self._diff = diff  # diff=0 means that HA will poll for updates
         self._value = None
-
-        asyncio.run(board.set_pin_mode_analog_input( pin,
-            (self._cb if self._diff!=0 else None),
-            self._diff if self._diff!=0 else None))
         self._board = board
 
-    async def _cb(self, data):
+        if (self._diff==0):
+            self._board.set_pin_mode_analog_input(self._pin)
+        else:
+            self._board.set_pin_mode_analog_input(self._pin, self._cb, self._diff)
+            self._value = self._board.analog_read(self._pin)[0]
+            self.async_write_ha_state()
+
+    def _cb(self, data):
         self._value = data[2]
-        await self.async_write_ha_state()
+        self.async_write_ha_state()
 
     @property
     def state(self):
@@ -75,7 +78,6 @@ class ArduinoSensor(Entity):
         """Return whether HA should poll for data updates."""
         return self._diff==0
 
-    async def async_update(self):
+    def update(self):
         """Get the latest value from the pin."""
-        _LOGGER.info("pin: "+str(self._pin))
-        self._value = (await self._board.analog_read(self._pin))[0]
+        self._value = self._board.analog_read(self._pin)[0]

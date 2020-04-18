@@ -41,21 +41,23 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 
 class ArduinoBinarySensor(BinarySensorDevice):
+    """Representation of an Arduino Binary Sensor."""
+
     def __init__(self, name, pin, pullup, board):
         """Initialize the sensor."""
         self._pin = pin
         self._name = name
         self._value = None
-
-        if pullup:
-            asyncio.run(board.set_pin_mode_digital_input_pullup(pin, self._cb))
-        else:
-            asyncio.run(board.set_pin_mode_digital_input(pin, self._cb))
         self._board = board
 
-    async def _cb(self, data):
+        if pullup:
+            self._board.set_pin_mode_digital_input_pullup(self._pin, self._cb)
+        else:
+            self._board.set_pin_mode_digital_input(self._pin, self._cb)
+
+    def _cb(self, data):
         self._value = data[2]
-        await self.async_write_ha_state()
+        self.async_write_ha_state()
 
     @property
     def is_on(self):

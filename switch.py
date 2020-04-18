@@ -53,8 +53,8 @@ class ArduinoSwitch(SwitchDevice):
         self._state = options[CONF_INITIAL]
         self._board = board
 
-        asyncio.run(board.set_pin_mode_digital_output(self._pin))
-        asyncio.run(self._update())
+        self._board.set_pin_mode_digital_output(self._pin)
+        self._update()
 
     @property
     def name(self):
@@ -66,15 +66,15 @@ class ArduinoSwitch(SwitchDevice):
         """Return true if pin is high/on."""
         return self._state
 
-    async def _update(self):
-        await self._board.digital_write(self._pin, self._state ^ self._negate)
+    def _update(self):
+        self._board.digital_write(self._pin, self._state ^ self._negate)
 
-    async def async_turn_on(self, **kwargs):
+    def async_turn_on(self, **kwargs):
         """Turn the pin to high/on."""
         self._state = True
-        await self._update()
+        self._update()
 
-    async def async_turn_off(self, **kwargs):
+    def async_turn_off(self, **kwargs):
         """Turn the pin to low/off."""
         self._state = False
-        await self._update()
+        self._update()

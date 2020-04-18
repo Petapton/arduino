@@ -2,6 +2,6 @@
   "domain": "arduino",
   "name": "Arduino",
   "documentation": "https://www.home-assistant.io/integrations/arduino",
-  "requirements": ["pymata-express"],
+  "requirements": ["pymata4"],
   "codeowners": ["@fabaff", "@petapton"]
 }
