@@ -37,18 +37,18 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     sensors = []
     for pinnum, pin in pins.items():
-        sensors.append(ArduinoSensor(pin.get(CONF_NAME), pinnum, pin.get(CONF_DIFF), board))
+        sensors.append(ArduinoSensor(pinnum, pin, board))
     add_entities(sensors)
 
 
 class ArduinoSensor(Entity):
     """Representation of an Arduino Sensor."""
 
-    def __init__(self, name, pin, diff, board):
+    def __init__(self, pin, options, board):
         """Initialize the sensor."""
         self._pin = pin
-        self._name = name
-        self._diff = diff  # diff=0 means that HA will poll for updates
+        self._name = options[CONF_NAME]
+        self._diff = options[CONF_DIFF]  # diff=0 means that HA will poll for updates
         self._value = None
         self._board = board
 

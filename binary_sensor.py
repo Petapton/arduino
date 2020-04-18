@@ -16,11 +16,13 @@ _LOGGER = logging.getLogger(__name__)
 
 CONF_PINS = "pins"
 CONF_PULLUP = "pullup"
+CONF_NEGATE = "negate"
 
 PIN_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
-        vol.Optional(CONF_PULLUP, default=False): cv.boolean
+        vol.Optional(CONF_PULLUP, default=False): cv.boolean,
+        vol.Optional(CONF_NEGATE, default=False): cv.boolean
     }
 )
 
@@ -36,21 +38,23 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     sensors = []
     for pinnum, pin in pins.items():
-        sensors.append(ArduinoBinarySensor(pin.get(CONF_NAME), pinnum, pin.get(CONF_PULLUP), board))
+        sensors.append(ArduinoBinarySensor(pinnum, pin, board))
     add_entities(sensors)
 
 
 class ArduinoBinarySensor(BinarySensorDevice):
     """Representation of an Arduino Binary Sensor."""
 
-    def __init__(self, name, pin, pullup, board):
+    def __init__(self, pin, options, board):
         """Initialize the sensor."""
         self._pin = pin
-        self._name = name
+        self._name = options[CONF_NAME]
+        self._negate = options[CONF_NEGATE]
+        self._pullup = options[CONF_PULLUP]
         self._value = None
         self._board = board
 
-        if pullup:
+        if self._pullup:
             self._board.set_pin_mode_digital_input_pullup(self._pin, self._cb)
         else:
             self._board.set_pin_mode_digital_input(self._pin, self._cb)
